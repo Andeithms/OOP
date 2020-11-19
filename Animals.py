@@ -1,15 +1,18 @@
 
 class Animal:
+    animals_list = []
+
     def __init__(self, eat, weight, sound, name):
+        Animal.animals_list.append(self)
         self.eat = eat
         self.weight = weight
         self.sound = sound
         self.name = name
 
-    def eating(self, time):
-        self.weight += self.eat * time
+    def eating(self, portion):
+        self.weight += self.eat * portion
 
-    def weighting(self, new_weight):
+    def weighting(self, new_weight):  # запись нового веса после взвешивания
         self.weight = new_weight
 
 
@@ -58,34 +61,22 @@ class Duck(Bird, Animal):
 
 geese_1 = Geese(1, 2, 'Га га', 'Серый')
 geese_2 = Geese(1, 2, 'Га га', 'Белый')
-
 cow = Cow(8, 200, 'Мууу', 'Манька')
-
 sheep_1 = Sheep(3, 90, 'Бее', 'Барашек')
 sheep_2 = Sheep(4, 86, 'Бее', 'Кудрявый')
-
 chicken_1 = Chicken(1, 3, 'Кудах', 'Ко-Ко')
 chicken_2 = Chicken(1, 3, 'Кудах', 'Кукареку')
-
 goat_1 = Goat(3, 80, 'Мее', 'Рога')
 goat_2 = Goat(3, 90, 'Мее', 'Копыто')
-
 duck = Duck(2, 3, 'Кря', 'Кряква')
 
-geese_1.eating(5)
-geese_2.eating(5)
-cow.eating(5)
-sheep_1.eating(5)
-sheep_2.eating(5)
-chicken_1.eating(5)
-chicken_2.eating(5)
-goat_1.eating(5)
-goat_2.eating(5)
-duck.eating(5)
-print(goat_2.milking(3), 'л молока')
-print(cow.milking(3), 'л молока')
+print(f'Собрано {goat_2.milking(3)} л молока у {goat_2.name}')
+print(f'Собрано {cow.milking(3)} л молока у {cow.name}')
 print(sheep_1.hair_shearing(2), 'кг шерсти')
-print(chicken_1.collecting(20), 'яиц')
+print(f'Собрано {chicken_1.collecting(20) + chicken_2.collecting(17)} яиц у куриц')
+
+for animal in Animal.animals_list:   # кормежка животных
+    animal.eating(2)
 
 animals_dict = {geese_1.name: geese_1.weight, geese_2.name: geese_2.weight, cow.name: cow.weight,
                 sheep_1.name: sheep_1.weight, sheep_2.name: sheep_2.weight,
