@@ -5,23 +5,30 @@ from tqdm import tqdm
 import json
 
 
-class User:
+class UserVK:
     url = 'https://api.vk.com/method/'
 
-    def __init__(self, user_id, token, version):
-        self.owner_id = user_id
-        self.token = token
+    def __init__(self, user_id, token, version, album):
         self.version = version
+        self.token = token
+        self.owner_id = user_id
+        self.album = album
+
+        if user_id.isdigit() is False:
+            resp = requests.get(self.url + "utils.resolveScreenName", {'access_token': self.token,
+                                                                       'v': self.version,
+                                                                       'screen_name': user_id}).json()
+            self.owner_id = resp['response']['object_id']
+
         self.params = {
             'owner_id': self.owner_id,
             'access_token': self.token,
             'v': self.version,
-            'album_id': 'profile',
+            'album_id': self.album,
             'extended': 1,
-             }
+        }
         self.photos = requests.get(self.url + "photos.get", self.params).json()
-        pprint(self.photos)
-
+        # pprint(self.photos)
 
     def creating_json(self):
         photo_list = []
@@ -29,15 +36,14 @@ class User:
             photo = {}
             count_like = i['likes']['count']
             photo['file_name'] = count_like
-            for x in photo_list:    # проверка фото на одинаковое кол-во лайков
+            for x in photo_list:  # проверка фото на одинаковое кол-во лайков
                 if x['file_name'] == count_like:
-                    photo['file_name'] = str(count_like) + '.' + str(i['date'])    # . - разделитель лайков и даты
+                    photo['file_name'] = str(count_like) + '.' + str(i['date'])  # '.' - разделитель лайков и даты
             photo['size'] = i['sizes'][-1]['type']  # -1 это последнее фото с максимальным разрешением
             photo_list.append(photo)
-        with open('D:\projects\photo.json', 'w') as file_work:
+        with open('photo.json', 'w') as file_work:
             json.dump(photo_list, file_work)
         return photo_list
-
 
     def photo_for_upload(self):
         photo_list = []
@@ -86,7 +92,6 @@ class YaUploader:
                      )
         return input_folder
 
-
     def upload(self, user):
         folder_name = self.creating_folder()
         photo_list = user.photo_for_upload()
@@ -98,18 +103,38 @@ class YaUploader:
                         'overwrite': 'true'},
                 headers=self.HEADERS,
             )
-
             time.sleep(1)
         return 'Фото загружены'
 
 
-if __name__ == '__main__':
+def user_inp():
     # user_input_vk = input('Введите токен vk ')
-    user_input_id = input('Введите id vk(например: 133423499) ')
+    user_input_id = input('Введите id vk(например: 133423499 или NickCoen) ')
+    while True:
+        inp_alb = input('Выберите откуда скачать фото,\n'
+                        'profile(личные) - P \n'
+                        'wall(со стены - w \n'
+                        'saved(сохранённые - s ')
+        if inp_alb == 'p':
+            album_id = 'profile'
+            break
+        elif inp_alb == 'w':
+            album_id = 'wall'
+            break
+        elif inp_alb == 's':
+            album_id = 'saved'
+            break
+        else:
+            print('Неверный ввод')
+
     token_input_ya = input('Введите токен Яндекса ')
     token_input_vk = '10b2e6b1a90a01875cfaa0d2dd307b7a73a15ceb1acf0c0f2a9e9c586f3b597815652e5c28ed8a1baf13c'
     version = '5.126'
-    user_1 = User(user_input_id, token_input_vk, version)
+    user_1 = UserVK(user_input_id, token_input_vk, version, album_id)
     uploader = YaUploader("OAuth " + token_input_ya)
     print(uploader.upload(user_1))
     user_1.creating_json()
+
+
+if __name__ == '__main__':
+    user_inp()
